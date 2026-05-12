@@ -9,7 +9,7 @@ const systems = {
   oxygen: { level: 98, status: "nominal", generator: "online" },
   power: { level: 87, status: "nominal", generation: 0 },
   pressure: { level: 1013, status: "nominal", target: 1013 },
-  temperature: { level: 22, status: "nominal" },
+  temperature: { level: 22, status: "nominal", target: 22 },
   hull: { integrity: 94, status: "stable" }
 };
 
@@ -62,23 +62,52 @@ const pressureSystem = {
   
   regulatePressure: function() {
     console.log(`\n🌬️ Pressure Regulation System active (${this.pumps} pumps)`);
-    
-    // Simulate small pressure drift and correction
     const drift = Math.floor(Math.random() * 5) - 2;
     systems.pressure.level += drift;
     
-    // Auto-correction
     if (systems.pressure.level !== systems.pressure.target) {
       systems.pressure.level = Math.max(900, Math.min(1100, systems.pressure.level));
       console.log(`Pressure adjusted to ${systems.pressure.level} hPa`);
     }
     
-    if (systems.pressure.level < 950 || systems.pressure.level > 1070) {
-      systems.pressure.status = "warning";
-      console.log("⚠️  Pressure anomaly detected!");
-    } else {
-      systems.pressure.status = "nominal";
+    systems.pressure.status = (systems.pressure.level < 950 || systems.pressure.level > 1070) ? "warning" : "nominal";
+    if (systems.pressure.status === "warning") console.log("⚠️  Pressure anomaly detected!");
+  }
+};
+
+// Temperature Control System
+const temperatureSystem = {
+  name: "Thermal Regulation",
+  radiators: 8,
+  heaters: 4,
+  status: "operational",
+  
+  regulateTemperature: function() {
+    console.log(`\n🌡️  Thermal System active (${this.radiators} radiators)`);
+    
+    // Simulate temperature drift
+    const drift = Math.floor(Math.random() * 3) - 1;
+    systems.temperature.level += drift;
+    
+    // Auto correction
+    if (systems.temperature.level < systems.temperature.target - 3) {
+      console.log("🔥 Heating system engaged");
+      systems.temperature.level += 2;
+    } else if (systems.temperature.level > systems.temperature.target + 3) {
+      console.log("❄️  Radiators venting excess heat");
+      systems.temperature.level -= 2;
     }
+    
+    systems.temperature.level = Math.max(-10, Math.min(40, systems.temperature.level));
+    
+    if (systems.temperature.level < 10 || systems.temperature.level > 30) {
+      systems.temperature.status = "warning";
+      console.log("⚠️  CRITICAL: Temperature out of safe range!");
+    } else {
+      systems.temperature.status = "nominal";
+    }
+    
+    console.log(`Station temperature stabilized at ${systems.temperature.level}°C`);
   }
 };
 
@@ -92,9 +121,10 @@ function checkSystemHealth() {
     console.log(`${system.toUpperCase()}: ${sys.status} (${sys.level || sys.integrity}%)${extra}`);
   });
   
-  console.log(`\nOXYGEN GENERATOR: ${oxygenGenerator.status} (${oxygenGenerator.filters} filters)`);
-  console.log(`POWER SYSTEM: ${powerSystem.status} (${powerSystem.panels} panels)`);
-  console.log(`PRESSURE SYSTEM: ${pressureSystem.status} (${pressureSystem.pumps} pumps)`);
+  console.log(`\nOXYGEN GENERATOR: ${oxygenGenerator.status}`);
+  console.log(`POWER SYSTEM: ${powerSystem.status}`);
+  console.log(`PRESSURE SYSTEM: ${pressureSystem.status}`);
+  console.log(`THERMAL SYSTEM: ${temperatureSystem.status}`);
 }
 
 function runMaintenanceCycle() {
@@ -103,12 +133,15 @@ function runMaintenanceCycle() {
   powerSystem.generatePower();
   powerSystem.checkBattery();
   pressureSystem.regulatePressure();
+  temperatureSystem.regulateTemperature();
   checkSystemHealth();
 }
 
 // Initial check
 checkSystemHealth();
 
-// Simulate maintenance cycles
-runMaintenanceCycle();
-runMaintenanceCycle();
+// Simulate multiple maintenance cycles
+for (let i = 1; i <= 3; i++) {
+  console.log(`\n--- CYCLE ${i} ---`);
+  runMaintenanceCycle();
+}
