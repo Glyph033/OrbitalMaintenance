@@ -10,7 +10,7 @@ const systems = {
   power: { level: 87, status: "nominal", generation: 0 },
   pressure: { level: 1013, status: "nominal", target: 1013 },
   temperature: { level: 22, status: "nominal", target: 22 },
-  hull: { integrity: 94, status: "stable" }
+  hull: { integrity: 94, status: "stable", breaches: 0 }
 };
 
 // Oxygen Generator Module
@@ -84,12 +84,9 @@ const temperatureSystem = {
   
   regulateTemperature: function() {
     console.log(`\n🌡️  Thermal System active (${this.radiators} radiators)`);
-    
-    // Simulate temperature drift
     const drift = Math.floor(Math.random() * 3) - 1;
     systems.temperature.level += drift;
     
-    // Auto correction
     if (systems.temperature.level < systems.temperature.target - 3) {
       console.log("🔥 Heating system engaged");
       systems.temperature.level += 2;
@@ -100,14 +97,46 @@ const temperatureSystem = {
     
     systems.temperature.level = Math.max(-10, Math.min(40, systems.temperature.level));
     
-    if (systems.temperature.level < 10 || systems.temperature.level > 30) {
-      systems.temperature.status = "warning";
-      console.log("⚠️  CRITICAL: Temperature out of safe range!");
+    systems.temperature.status = (systems.temperature.level < 10 || systems.temperature.level > 30) ? "warning" : "nominal";
+    if (systems.temperature.status === "warning") console.log("⚠️  CRITICAL: Temperature out of safe range!");
+    else console.log(`Station temperature stabilized at ${systems.temperature.level}°C`);
+  }
+};
+
+// Hull Integrity System
+const hullSystem = {
+  name: "Hull Integrity Control",
+  armorPlates: 48,
+  repairDrones: 6,
+  status: "stable",
+  
+  monitorHull: function() {
+    console.log(`\n🛡️  Hull Integrity System active (${this.armorPlates} plates)`);
+    
+    // Simulate random micrometeorite impact
+    if (Math.random() < 0.4) {
+      const damage = Math.floor(Math.random() * 7) + 2;
+      systems.hull.integrity = Math.max(5, systems.hull.integrity - damage);
+      systems.hull.breaches++;
+      console.log(`💥 Micrometeorite impact! Hull took ${damage}% damage`);
+      
+      if (systems.hull.integrity < 60) {
+        systems.hull.status = "critical";
+        console.log("🚨 HULL BREACH RISK - Emergency protocols recommended!");
+      } else if (systems.hull.integrity < 85) {
+        systems.hull.status = "warning";
+        console.log("⚠️  Hull integrity compromised");
+      }
     } else {
-      systems.temperature.status = "nominal";
+      // Minor repair
+      if (systems.hull.integrity < 100) {
+        const repair = Math.floor(Math.random() * 3) + 1;
+        systems.hull.integrity = Math.min(100, systems.hull.integrity + repair);
+        console.log(`🔧 Repair drones restored ${repair}% hull integrity`);
+      }
     }
     
-    console.log(`Station temperature stabilized at ${systems.temperature.level}°C`);
+    console.log(`Current hull integrity: ${systems.hull.integrity}%`);
   }
 };
 
@@ -117,7 +146,7 @@ function checkSystemHealth() {
     const sys = systems[system];
     let extra = "";
     if (system === "power") extra = ` (Gen: ${sys.generation} MW)`;
-    if (system === "hull") extra = ` (Integrity: ${sys.integrity}%)`;
+    if (system === "hull") extra = ` (Breaches: ${sys.breaches})`;
     console.log(`${system.toUpperCase()}: ${sys.status} (${sys.level || sys.integrity}%)${extra}`);
   });
   
@@ -125,6 +154,7 @@ function checkSystemHealth() {
   console.log(`POWER SYSTEM: ${powerSystem.status}`);
   console.log(`PRESSURE SYSTEM: ${pressureSystem.status}`);
   console.log(`THERMAL SYSTEM: ${temperatureSystem.status}`);
+  console.log(`HULL SYSTEM: ${hullSystem.status}`);
 }
 
 function runMaintenanceCycle() {
@@ -134,14 +164,17 @@ function runMaintenanceCycle() {
   powerSystem.checkBattery();
   pressureSystem.regulatePressure();
   temperatureSystem.regulateTemperature();
+  hullSystem.monitorHull();
   checkSystemHealth();
 }
 
 // Initial check
 checkSystemHealth();
 
+console.log("\n=== STARTING ORBITAL MAINTENANCE SHIFT ===");
+
 // Simulate multiple maintenance cycles
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 4; i++) {
   console.log(`\n--- CYCLE ${i} ---`);
   runMaintenanceCycle();
 }
