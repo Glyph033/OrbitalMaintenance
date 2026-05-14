@@ -113,7 +113,6 @@ const hullSystem = {
   monitorHull: function() {
     console.log(`\n🛡️  Hull Integrity System active (${this.armorPlates} plates)`);
     
-    // Simulate random micrometeorite impact
     if (Math.random() < 0.4) {
       const damage = Math.floor(Math.random() * 7) + 2;
       systems.hull.integrity = Math.max(5, systems.hull.integrity - damage);
@@ -128,7 +127,6 @@ const hullSystem = {
         console.log("⚠️  Hull integrity compromised");
       }
     } else {
-      // Minor repair
       if (systems.hull.integrity < 100) {
         const repair = Math.floor(Math.random() * 3) + 1;
         systems.hull.integrity = Math.min(100, systems.hull.integrity + repair);
@@ -137,6 +135,28 @@ const hullSystem = {
     }
     
     console.log(`Current hull integrity: ${systems.hull.integrity}%`);
+  }
+};
+
+// Emergency Alert System
+const alertSystem = {
+  name: "Central Alert System",
+  log: [],
+  
+  triggerAlert: function(level, message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const alert = `[${timestamp}] ${level}: ${message}`;
+    this.log.push(alert);
+    console.log(alert);
+    
+    if (level === "CRITICAL") {
+      console.log("🚨🚨 STATION-WIDE ALERT BROADCAST 🚨🚨");
+    }
+  },
+  
+  showLogs: function() {
+    console.log("\n📜 STATION LOG:");
+    this.log.forEach(entry => console.log(entry));
   }
 };
 
@@ -165,16 +185,28 @@ function runMaintenanceCycle() {
   pressureSystem.regulatePressure();
   temperatureSystem.regulateTemperature();
   hullSystem.monitorHull();
+  
+  // Random critical events
+  if (Math.random() < 0.25) {
+    alertSystem.triggerAlert("WARNING", "Minor power fluctuation detected");
+  }
+  if (Math.random() < 0.15) {
+    alertSystem.triggerAlert("CRITICAL", "Oxygen filter #2 performance dropping!");
+  }
+  
   checkSystemHealth();
 }
 
 // Initial check
 checkSystemHealth();
+alertSystem.triggerAlert("INFO", "Maintenance shift started - All systems nominal");
 
 console.log("\n=== STARTING ORBITAL MAINTENANCE SHIFT ===");
 
 // Simulate multiple maintenance cycles
-for (let i = 1; i <= 4; i++) {
+for (let i = 1; i <= 5; i++) {
   console.log(`\n--- CYCLE ${i} ---`);
   runMaintenanceCycle();
 }
+
+alertSystem.showLogs();
