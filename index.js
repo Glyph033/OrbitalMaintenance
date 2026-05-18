@@ -13,6 +13,49 @@ const systems = {
   hull: { integrity: 94, status: "stable", breaches: 0 }
 };
 
+// Upgrade system
+const upgrades = {
+  applied: [],
+  
+  list: [
+    { id: 1, name: "Oxygen Filter Mk2", cost: 15, effect: "oxygen", value: 8 },
+    { id: 2, name: "Extra Solar Panels", cost: 20, effect: "power", value: 6 },
+    { id: 3, name: "Reinforced Hull Plating", cost: 25, effect: "hull", value: 12 },
+    { id: 4, name: "Advanced Thermal Radiators", cost: 18, effect: "temperature", value: 5 }
+  ],
+  
+  purchase: function(id) {
+    const upgrade = this.list.find(u => u.id === id);
+    if (!upgrade) return false;
+    
+    console.log(`\n🛠️ Attempting to purchase: ${upgrade.name}`);
+    
+    // Simple resource check (using power as currency for simulation)
+    if (systems.power.level < upgrade.cost) {
+      console.log("❌ Not enough power reserves to purchase upgrade.");
+      return false;
+    }
+    
+    systems.power.level -= upgrade.cost;
+    this.applied.push(upgrade);
+    
+    console.log(`✅ Upgrade purchased: ${upgrade.name}`);
+    
+    // Apply effect
+    if (upgrade.effect === "oxygen") {
+      oxygenGenerator.efficiency += upgrade.value;
+    } else if (upgrade.effect === "power") {
+      powerSystem.panels += 4;
+    } else if (upgrade.effect === "hull") {
+      systems.hull.integrity = Math.min(100, systems.hull.integrity + upgrade.value);
+    } else if (upgrade.effect === "temperature") {
+      temperatureSystem.radiators += 3;
+    }
+    
+    return true;
+  }
+};
+
 // Crew Module
 const crewModule = {
   name: "Crew Quarters",
@@ -25,15 +68,12 @@ const crewModule = {
     
     const o2Consumed = Math.floor(this.population * 0.45);
     systems.oxygen.level = Math.max(5, systems.oxygen.level - o2Consumed);
-    console.log(`Crew consumed ${o2Consumed}% oxygen`);
     
     const powerConsumed = Math.floor(this.population * 0.35);
     systems.power.level = Math.max(5, systems.power.level - powerConsumed);
-    console.log(`Crew systems consumed ${powerConsumed}% power`);
     
     if (Math.random() < 0.35) {
       this.morale = Math.max(10, this.morale - Math.floor(Math.random() * 9));
-      console.log(`Crew morale decreased to ${this.morale}%`);
     }
   }
 };
@@ -47,9 +87,8 @@ const oxygenGenerator = {
   
   generateOxygen: function() {
     console.log(`\n💨 Oxygen Generator active (${this.filters} redundant filters)`);
-    console.log(`Efficiency: ${this.efficiency}%`);
-    systems.oxygen.level = Math.min(100, systems.oxygen.level + 6);
-    console.log(`Oxygen level increased to ${systems.oxygen.level}%`);
+    const boost = Math.floor(this.efficiency / 12);
+    systems.oxygen.level = Math.min(100, systems.oxygen.level + boost);
   }
 };
 
@@ -66,22 +105,20 @@ const powerSystem = {
     const generated = Math.floor(this.panels * (this.efficiency / 100) * 9);
     systems.power.generation = generated;
     systems.power.level = Math.min(100, systems.power.level + Math.floor(generated / 7));
-    
-    console.log(`Power generated: ${generated} MW`);
-    console.log(`Battery level → ${systems.power.level}%`);
   },
   
   checkBattery: function() {
     if (systems.power.level < 25) {
       console.log("⚠️  CRITICAL: Low power! Battery reserve engaged.");
-      this.batteryLevel = Math.max(5, this.batteryLevel - 12);
     }
   }
 };
 
-// Pressure, Temperature, Hull, and Alert systems (same as previous with minor improvements)
-const pressureSystem = { /* ... same as before ... */ 
-  name: "Atmospheric Regulator", pumps: 4, status: "operational",
+// Pressure Regulation System
+const pressureSystem = {
+  name: "Atmospheric Regulator",
+  pumps: 4,
+  status: "operational",
   regulatePressure: function() {
     console.log(`\n🌬️ Pressure Regulation System active`);
     const drift = Math.floor(Math.random() * 6) - 3;
@@ -91,8 +128,11 @@ const pressureSystem = { /* ... same as before ... */
   }
 };
 
-const temperatureSystem = { /* ... */ 
-  name: "Thermal Regulation", radiators: 8, status: "operational",
+// Temperature Control System
+const temperatureSystem = {
+  name: "Thermal Regulation",
+  radiators: 8,
+  status: "operational",
   regulateTemperature: function() {
     console.log(`\n🌡️  Thermal System active`);
     const drift = Math.floor(Math.random() * 4) - 2;
@@ -102,8 +142,12 @@ const temperatureSystem = { /* ... */
   }
 };
 
-const hullSystem = { /* ... */ 
-  name: "Hull Integrity Control", armorPlates: 48, repairDrones: 6, status: "stable",
+// Hull Integrity System
+const hullSystem = {
+  name: "Hull Integrity Control",
+  armorPlates: 48,
+  repairDrones: 6,
+  status: "stable",
   monitorHull: function() {
     console.log(`\n🛡️  Hull Integrity System active`);
     if (Math.random() < 0.4) {
@@ -114,11 +158,11 @@ const hullSystem = { /* ... */
     } else if (systems.hull.integrity < 100) {
       const repair = Math.floor(Math.random() * 5) + 2;
       systems.hull.integrity = Math.min(100, systems.hull.integrity + repair);
-      console.log(`🔧 Repaired ${repair}% hull`);
     }
   }
 };
 
+// Emergency Alert System
 const alertSystem = {
   log: [],
   triggerAlert: function(level, message) {
@@ -140,25 +184,12 @@ function checkSystemHealth() {
     if (system === "hull") extra = ` (Breaches: ${sys.breaches})`;
     console.log(`${system.toUpperCase()}: ${sys.status} (${sys.level || sys.integrity}%)${extra}`);
   });
-  
   console.log(`CREW: ${crewModule.population} | Morale: ${crewModule.morale}%`);
 }
 
 function isGameOver() {
-  if (systems.oxygen.level <= 10) {
-    alertSystem.triggerAlert("CRITICAL", "OXYGEN CRITICAL - Evacuation protocol activated");
-    return true;
-  }
-  if (systems.power.level <= 8) {
-    alertSystem.triggerAlert("CRITICAL", "TOTAL POWER FAILURE");
-    return true;
-  }
-  if (systems.hull.integrity <= 15) {
-    alertSystem.triggerAlert("CRITICAL", "HULL COMPROMISED - STATION BREACHED");
-    return true;
-  }
-  if (crewModule.morale <= 15) {
-    alertSystem.triggerAlert("CRITICAL", "Crew morale collapsed - Mutiny risk");
+  if (systems.oxygen.level <= 10 || systems.power.level <= 8 || 
+      systems.hull.integrity <= 15 || crewModule.morale <= 15) {
     return true;
   }
   return false;
@@ -175,37 +206,37 @@ function runMaintenanceCycle(cycle) {
   temperatureSystem.regulateTemperature();
   hullSystem.monitorHull();
   
-  // Random events
+  // Random upgrade opportunity
+  if (cycle === 3 || cycle === 6) {
+    console.log("\n🛒 UPGRADE OPPORTUNITY AVAILABLE");
+    upgrades.purchase(1); // Auto buy first upgrade for demo
+  }
+  
   if (Math.random() < 0.25) alertSystem.triggerAlert("WARNING", "Solar flare interference");
-  if (Math.random() < 0.18) alertSystem.triggerAlert("WARNING", "Minor leak detected in sector 7");
   
   checkSystemHealth();
-  
   return isGameOver();
 }
 
 // ========================
-// MAIN SIMULATION LOOP
+// MAIN SIMULATION
 // ========================
 
 console.log("\n=== ORBITAL MAINTENANCE SHIFT START ===");
-
-alertSystem.triggerAlert("INFO", "New maintenance shift started. Good luck, Engineer.");
+alertSystem.triggerAlert("INFO", "New maintenance shift started.");
 
 let shiftEnded = false;
 for (let cycle = 1; cycle <= 8; cycle++) {
   if (runMaintenanceCycle(cycle)) {
-    shiftEnded = true;
     console.log("\n💀 SHIFT FAILED - Station lost");
+    shiftEnded = true;
     break;
-  }
-  
-  if (cycle === 8) {
-    console.log("\n✅ SHIFT COMPLETE - Station survived!");
-    alertSystem.triggerAlert("INFO", "End of shift. All crew accounted for.");
   }
 }
 
-alertSystem.showLogs();
+if (!shiftEnded) {
+  console.log("\n✅ SHIFT COMPLETE - Station survived another day!");
+}
 
+alertSystem.showLogs();
 console.log("\n=== ORBITAL MAINTENANCE SIMULATION ENDED ===");
