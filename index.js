@@ -158,7 +158,6 @@ const alertSystem = {
 const performanceMetrics = {
   cyclesSurvived: 0,
   totalAlerts: 0,
-  avgHull: 0,
   upgradesPurchased: 0,
   
   calculateScore: function() {
@@ -168,8 +167,38 @@ const performanceMetrics = {
     score += systems.hull.integrity * 1.5;
     score += crewModule.morale * 0.8;
     score += this.upgradesPurchased * 25;
-    score = Math.floor(score);
-    return Math.min(1000, Math.max(0, score));
+    return Math.floor(Math.min(1000, Math.max(0, score)));
+  }
+};
+
+// Interactive Command System
+const commandSystem = {
+  execute: function(command) {
+    console.log(`\n> ${command}`);
+    switch(command.toLowerCase()) {
+      case "oxygen":
+      case "o2":
+        oxygenGenerator.generateOxygen();
+        console.log("Manual oxygen boost applied.");
+        break;
+      case "power":
+        powerSystem.generatePower();
+        console.log("Manual solar array overcharge activated.");
+        break;
+      case "repair":
+        systems.hull.integrity = Math.min(100, systems.hull.integrity + 15);
+        console.log("🔧 Emergency hull repair deployed.");
+        break;
+      case "cool":
+        systems.temperature.level = Math.max(15, systems.temperature.level - 8);
+        console.log("❄️ Emergency cooling activated.");
+        break;
+      case "status":
+        checkSystemHealth();
+        break;
+      default:
+        console.log("Unknown command. Available: oxygen, power, repair, cool, status");
+    }
   }
 };
 
@@ -203,7 +232,8 @@ function runMaintenanceCycle(cycle) {
   temperatureSystem.regulateTemperature();
   hullSystem.monitorHull();
   
-  if (cycle === 3 || cycle === 6) {
+  // Random upgrade opportunity
+  if (cycle === 4 || cycle === 7) {
     console.log("\n🛒 UPGRADE OPPORTUNITY AVAILABLE");
     if (upgrades.purchase(1)) performanceMetrics.upgradesPurchased++;
   }
@@ -212,6 +242,10 @@ function runMaintenanceCycle(cycle) {
     alertSystem.triggerAlert("WARNING", "Solar flare interference");
     performanceMetrics.totalAlerts++;
   }
+  
+  // Demo interactive commands
+  if (cycle === 3) commandSystem.execute("oxygen");
+  if (cycle === 5) commandSystem.execute("repair");
   
   checkSystemHealth();
   performanceMetrics.cyclesSurvived = cycle;
