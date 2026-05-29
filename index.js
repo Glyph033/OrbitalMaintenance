@@ -159,7 +159,6 @@ const performanceMetrics = {
   cyclesSurvived: 0,
   totalAlerts: 0,
   upgradesPurchased: 0,
-  
   calculateScore: function() {
     let score = 0;
     score += systems.oxygen.level * 1.2;
@@ -173,31 +172,53 @@ const performanceMetrics = {
 
 // Interactive Command System
 const commandSystem = {
+  showHelp: function() {
+    console.log("\n=== AVAILABLE COMMANDS ===");
+    console.log("oxygen / o2     → Emergency oxygen generation");
+    console.log("power           → Overcharge solar arrays");
+    console.log("repair          → Deploy hull repair drones");
+    console.log("cool            → Emergency cooling");
+    console.log("status          → Full system report");
+    console.log("upgrade [id]    → Buy upgrade (1-4)");
+    console.log("help            → Show this menu");
+  },
+  
   execute: function(command) {
     console.log(`\n> ${command}`);
-    switch(command.toLowerCase()) {
+    const parts = command.toLowerCase().split(" ");
+    const cmd = parts[0];
+    
+    switch(cmd) {
       case "oxygen":
       case "o2":
         oxygenGenerator.generateOxygen();
-        console.log("Manual oxygen boost applied.");
+        console.log("✅ Manual oxygen boost applied.");
         break;
       case "power":
         powerSystem.generatePower();
-        console.log("Manual solar array overcharge activated.");
+        console.log("✅ Manual solar array overcharge activated.");
         break;
       case "repair":
-        systems.hull.integrity = Math.min(100, systems.hull.integrity + 15);
-        console.log("🔧 Emergency hull repair deployed.");
+        systems.hull.integrity = Math.min(100, systems.hull.integrity + 18);
+        console.log("✅ Emergency hull repair deployed.");
         break;
       case "cool":
-        systems.temperature.level = Math.max(15, systems.temperature.level - 8);
-        console.log("❄️ Emergency cooling activated.");
+        systems.temperature.level = Math.max(15, systems.temperature.level - 10);
+        console.log("✅ Emergency cooling activated.");
         break;
       case "status":
         checkSystemHealth();
         break;
+      case "help":
+        this.showHelp();
+        break;
+      case "upgrade":
+        const id = parseInt(parts[1]);
+        if (id) upgrades.purchase(id);
+        else console.log("Usage: upgrade <id> (1-4)");
+        break;
       default:
-        console.log("Unknown command. Available: oxygen, power, repair, cool, status");
+        console.log("Unknown command. Type 'help' for available commands.");
     }
   }
 };
@@ -232,20 +253,15 @@ function runMaintenanceCycle(cycle) {
   temperatureSystem.regulateTemperature();
   hullSystem.monitorHull();
   
-  // Random upgrade opportunity
   if (cycle === 4 || cycle === 7) {
     console.log("\n🛒 UPGRADE OPPORTUNITY AVAILABLE");
     if (upgrades.purchase(1)) performanceMetrics.upgradesPurchased++;
   }
   
-  if (Math.random() < 0.3) {
+  if (Math.random() < 0.28) {
     alertSystem.triggerAlert("WARNING", "Solar flare interference");
     performanceMetrics.totalAlerts++;
   }
-  
-  // Demo interactive commands
-  if (cycle === 3) commandSystem.execute("oxygen");
-  if (cycle === 5) commandSystem.execute("repair");
   
   checkSystemHealth();
   performanceMetrics.cyclesSurvived = cycle;
@@ -258,29 +274,36 @@ function runMaintenanceCycle(cycle) {
 // ========================
 
 console.log("\n=== ORBITAL MAINTENANCE SHIFT START ===");
-alertSystem.triggerAlert("INFO", "New maintenance shift started. Good luck, Engineer.");
+alertSystem.triggerAlert("INFO", "New maintenance shift started. Type 'help' for commands.");
+
+commandSystem.showHelp();
 
 let shiftEnded = false;
-for (let cycle = 1; cycle <= 10; cycle++) {
+for (let cycle = 1; cycle <= 12; cycle++) {
   if (runMaintenanceCycle(cycle)) {
     console.log("\n💀 SHIFT FAILED - Station lost");
     shiftEnded = true;
     break;
   }
+  
+  // Demo commands during simulation
+  if (cycle === 2) commandSystem.execute("oxygen");
+  if (cycle === 5) commandSystem.execute("repair");
+  if (cycle === 8) commandSystem.execute("power");
 }
 
 if (!shiftEnded) {
-  console.log("\n✅ SHIFT COMPLETE - Station survived the full shift!");
+  console.log("\n✅ SHIFT COMPLETE - Excellent work, Engineer!");
 }
 
 // Final Report
-console.log("\n" + "=".repeat(50));
+console.log("\n" + "=".repeat(55));
 console.log("           END OF SHIFT REPORT");
-console.log("=".repeat(50));
+console.log("=".repeat(55));
 console.log(`Shift Score: ${performanceMetrics.calculateScore()}/1000`);
 console.log(`Cycles Completed: ${performanceMetrics.cyclesSurvived}`);
 console.log(`Upgrades Purchased: ${performanceMetrics.upgradesPurchased}`);
-console.log(`Total Alerts: ${performanceMetrics.totalAlerts}`);
+console.log(`Total Alerts Handled: ${performanceMetrics.totalAlerts}`);
 console.log(`Final Hull Integrity: ${systems.hull.integrity}%`);
 console.log(`Final Crew Morale: ${crewModule.morale}%`);
 
