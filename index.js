@@ -1,7 +1,7 @@
 // Orbital Maintenance System - index.js
 // Space station maintenance simulator
 
-console.log("🚀 Orbital Maintenance System v0.8 initialized");
+console.log("🚀 Orbital Maintenance System v0.9 initialized");
 
 // Main Game Class
 class OrbitalMaintenanceGame {
@@ -19,70 +19,97 @@ class OrbitalMaintenanceGame {
     this.alertLog = [];
     this.cycle = 0;
     this.gameOver = false;
+    this.shiftComplete = false;
   }
 
   triggerAlert(level, message) {
-    const alert = `[${new Date().toLocaleTimeString()}] ${level}: ${message}`;
+    const alert = `[CYCLE ${this.cycle}] ${level}: ${message}`;
     this.alertLog.push(alert);
     console.log(alert);
   }
 
   checkSystemHealth() {
-    console.log("\n=== SYSTEM HEALTH CHECK ===");
+    console.log("\n=== SYSTEM STATUS ===");
     Object.keys(this.systems).forEach(key => {
       const sys = this.systems[key];
       const value = sys.level !== undefined ? sys.level : sys.integrity;
-      console.log(`${key.toUpperCase()}: ${sys.status} (${value}%)`);
+      console.log(`${key.toUpperCase().padEnd(12)}: ${sys.status.padEnd(8)} ${value}%`);
     });
-    console.log(`CREW: ${this.crew.population} | Morale: ${this.crew.morale}%`);
+    console.log(`CREW       : ${this.crew.population} | Morale: ${this.crew.morale}%`);
+  }
+
+  manualAction(action) {
+    console.log(`\n> EXECUTING: ${action.toUpperCase()}`);
+    switch(action.toLowerCase()) {
+      case "oxygen":
+      case "o2":
+        this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 22);
+        console.log("💨 Large oxygen boost deployed.");
+        break;
+      case "power":
+        this.systems.power.level = Math.min(100, this.systems.power.level + 18);
+        console.log("☀️ Solar arrays overclocked.");
+        break;
+      case "repair":
+        this.systems.hull.integrity = Math.min(100, this.systems.hull.integrity + 20);
+        console.log("🛠️ Repair drones launched.");
+        break;
+      case "cool":
+        this.systems.temperature.level = Math.max(10, this.systems.temperature.level - 12);
+        console.log("❄️ Emergency cooling activated.");
+        break;
+      case "boost":
+        this.crew.morale = Math.min(100, this.crew.morale + 15);
+        console.log("👥 Crew morale boosted.");
+        break;
+      default:
+        console.log("Unknown command. Try: oxygen, power, repair, cool, boost");
+    }
   }
 
   runMaintenanceCycle() {
     this.cycle++;
-    console.log(`\n🔧 --- MAINTENANCE CYCLE ${this.cycle} ---`);
+    console.log(`\n🔧 === CYCLE ${this.cycle} ===`);
 
-    // Resource consumption
-    const o2Use = Math.floor(this.crew.population * 0.45);
-    this.systems.oxygen.level = Math.max(5, this.systems.oxygen.level - o2Use);
+    // Passive consumption
+    this.systems.oxygen.level = Math.max(5, this.systems.oxygen.level - 8);
+    this.systems.power.level = Math.max(5, this.systems.power.level - 7);
 
-    const powerUse = Math.floor(this.crew.population * 0.35);
-    this.systems.power.level = Math.max(5, this.systems.power.level - powerUse);
+    // System recovery
+    this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 6);
+    this.systems.power.level = Math.min(100, this.systems.power.level + 8);
 
-    // System operations
-    this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 7);
-    this.systems.power.level = Math.min(100, this.systems.power.level + 9);
-    
     // Random events
-    if (Math.random() < 0.35) {
-      this.triggerAlert("WARNING", "Micrometeorite shower detected");
-      this.systems.hull.integrity = Math.max(5, this.systems.hull.integrity - 6);
+    if (Math.random() < 0.4) {
+      this.triggerAlert("WARNING", "Micrometeorite impact");
+      this.systems.hull.integrity = Math.max(5, this.systems.hull.integrity - 8);
     }
-    if (Math.random() < 0.25) {
-      this.crew.morale = Math.max(10, this.crew.morale - 5);
+    if (Math.random() < 0.3) {
+      this.crew.morale = Math.max(10, this.crew.morale - 6);
     }
 
     this.checkSystemHealth();
 
-    // Game over check
+    // Game over conditions
     if (this.systems.oxygen.level <= 12 || this.systems.power.level <= 10 || 
         this.systems.hull.integrity <= 18 || this.crew.morale <= 15) {
       this.gameOver = true;
-      this.triggerAlert("CRITICAL", "STATION FAILURE IMMINENT");
+      this.triggerAlert("CRITICAL", "STATION CRITICAL FAILURE");
     }
   }
 
   showEndReport() {
-    console.log("\n" + "=".repeat(60));
-    console.log("           ORBITAL MAINTENANCE SHIFT REPORT");
-    console.log("=".repeat(60));
-    console.log(`Cycles Survived: ${this.cycle}`);
-    console.log(`Final Score: ${Math.floor(this.calculateScore())}/1000`);
-    console.log(`Hull Integrity: ${this.systems.hull.integrity}%`);
-    console.log(`Crew Morale: ${this.crew.morale}%`);
-    console.log(`Upgrades Purchased: ${this.upgradesPurchased}`);
+    console.log("\n" + "=".repeat(65));
+    console.log("           ORBITAL MAINTENANCE - SHIFT REPORT");
+    console.log("=".repeat(65));
+    console.log(`Cycles Survived     : ${this.cycle}`);
+    console.log(`Final Score         : ${Math.floor(this.calculateScore())}/1000`);
+    console.log(`Hull Integrity      : ${this.systems.hull.integrity}%`);
+    console.log(`Crew Morale         : ${this.crew.morale}%`);
+    console.log(`Upgrades Purchased  : ${this.upgradesPurchased}`);
     console.log("\n📜 ALERT LOG:");
-    this.alertLog.forEach(log => console.log(log));
-    console.log("=".repeat(60));
+    this.alertLog.forEach(log => console.log("  " + log));
+    console.log("=".repeat(65));
   }
 
   calculateScore() {
@@ -95,31 +122,35 @@ class OrbitalMaintenanceGame {
 }
 
 // ========================
-// GAME EXECUTION
+// INTERACTIVE GAME LOOP
 // ========================
 
 const game = new OrbitalMaintenanceGame();
 
 console.log("\n=== ORBITAL MAINTENANCE SHIFT START ===");
-game.triggerAlert("INFO", "Engineer on duty. Station is yours.");
+game.triggerAlert("INFO", "You are now in command. Keep the station alive!");
 
-for (let i = 0; i < 15; i++) {
+for (let i = 0; i < 18; i++) {
   game.runMaintenanceCycle();
-  if (game.gameOver) break;
   
-  // Demo manual intervention every few cycles
-  if (i === 4 || i === 9) {
-    console.log("\n> MANUAL INTERVENTION: Emergency oxygen boost");
-    game.systems.oxygen.level = Math.min(100, game.systems.oxygen.level + 15);
+  if (game.gameOver) break;
+
+  // Simulate player input every 3 cycles
+  if (i % 3 === 0 && i > 0) {
+    console.log("\n[EMERGENCY ACTION AVAILABLE]");
+    const actions = ["oxygen", "repair", "power"];
+    const randomAction = actions[Math.floor(Math.random() * actions.length)];
+    game.manualAction(randomAction);
   }
 }
 
 if (!game.gameOver) {
-  console.log("\n✅ SHIFT COMPLETE - You kept the station alive!");
+  console.log("\n✅ SHIFT COMPLETE - Outstanding work, Commander!");
+  game.shiftComplete = true;
 } else {
-  console.log("\n💀 MISSION FAILED - Station lost");
+  console.log("\n💀 STATION LOST - Mission Failed");
 }
 
 game.showEndReport();
 
-console.log("\n=== SIMULATION ENDED ===");
+console.log("\n=== ORBITAL MAINTENANCE SIMULATION ENDED ===");
