@@ -1,11 +1,20 @@
 // Orbital Maintenance System - index.js
 // Space station maintenance simulator
 
-console.log("🚀 Orbital Maintenance System v0.9 initialized");
+console.log("🚀 Orbital Maintenance System v1.0 initialized");
 
 // Main Game Class
 class OrbitalMaintenanceGame {
   constructor() {
+    this.resetGame();
+    this.highScores = [
+      { score: 845, cycles: 18 },
+      { score: 762, cycles: 15 },
+      { score: 691, cycles: 12 }
+    ];
+  }
+
+  resetGame() {
     this.systems = {
       oxygen: { level: 98, status: "nominal" },
       power: { level: 87, status: "nominal", generation: 0 },
@@ -71,26 +80,22 @@ class OrbitalMaintenanceGame {
     this.cycle++;
     console.log(`\n🔧 === CYCLE ${this.cycle} ===`);
 
-    // Passive consumption
     this.systems.oxygen.level = Math.max(5, this.systems.oxygen.level - 8);
     this.systems.power.level = Math.max(5, this.systems.power.level - 7);
 
-    // System recovery
     this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 6);
     this.systems.power.level = Math.min(100, this.systems.power.level + 8);
 
-    // Random events
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.38) {
       this.triggerAlert("WARNING", "Micrometeorite impact");
       this.systems.hull.integrity = Math.max(5, this.systems.hull.integrity - 8);
     }
-    if (Math.random() < 0.3) {
+    if (Math.random() < 0.28) {
       this.crew.morale = Math.max(10, this.crew.morale - 6);
     }
 
     this.checkSystemHealth();
 
-    // Game over conditions
     if (this.systems.oxygen.level <= 12 || this.systems.power.level <= 10 || 
         this.systems.hull.integrity <= 18 || this.crew.morale <= 15) {
       this.gameOver = true;
@@ -98,59 +103,87 @@ class OrbitalMaintenanceGame {
     }
   }
 
+  calculateScore() {
+    return Math.floor(
+      (this.systems.oxygen.level * 1.3) +
+      (this.systems.power.level * 1.2) +
+      (this.systems.hull.integrity * 1.6) +
+      (this.crew.morale * 0.9) +
+      (this.upgradesPurchased * 30)
+    );
+  }
+
   showEndReport() {
+    const score = this.calculateScore();
     console.log("\n" + "=".repeat(65));
     console.log("           ORBITAL MAINTENANCE - SHIFT REPORT");
     console.log("=".repeat(65));
     console.log(`Cycles Survived     : ${this.cycle}`);
-    console.log(`Final Score         : ${Math.floor(this.calculateScore())}/1000`);
+    console.log(`Final Score         : ${score}/1000`);
     console.log(`Hull Integrity      : ${this.systems.hull.integrity}%`);
     console.log(`Crew Morale         : ${this.crew.morale}%`);
     console.log(`Upgrades Purchased  : ${this.upgradesPurchased}`);
+    
+    // Update high scores
+    if (score > this.highScores[2].score) {
+      console.log("🏆 NEW HIGH SCORE ACHIEVED!");
+      this.highScores.push({ score, cycles: this.cycle });
+      this.highScores.sort((a, b) => b.score - a.score);
+      this.highScores = this.highScores.slice(0, 5);
+    }
+
+    console.log("\n🏅 HIGH SCORES:");
+    this.highScores.forEach((hs, i) => {
+      console.log(`  ${i+1}. ${hs.score} pts (${hs.cycles} cycles)`);
+    });
+
     console.log("\n📜 ALERT LOG:");
     this.alertLog.forEach(log => console.log("  " + log));
     console.log("=".repeat(65));
   }
-
-  calculateScore() {
-    return (this.systems.oxygen.level * 1.3) +
-           (this.systems.power.level * 1.2) +
-           (this.systems.hull.integrity * 1.6) +
-           (this.crew.morale * 0.9) +
-           (this.upgradesPurchased * 30);
-  }
 }
 
 // ========================
-// INTERACTIVE GAME LOOP
+// MULTI-SHIFT CAMPAIGN
 // ========================
+
+console.log("\n=== ORBITAL MAINTENANCE CAMPAIGN START ===");
 
 const game = new OrbitalMaintenanceGame();
+let currentShift = 1;
+const totalShifts = 3;
 
-console.log("\n=== ORBITAL MAINTENANCE SHIFT START ===");
-game.triggerAlert("INFO", "You are now in command. Keep the station alive!");
-
-for (let i = 0; i < 18; i++) {
-  game.runMaintenanceCycle();
+while (currentShift <= totalShifts) {
+  console.log(`\n📍 SHIFT ${currentShift} / ${totalShifts}`);
+  game.resetGame();
   
-  if (game.gameOver) break;
+  game.triggerAlert("INFO", `Shift ${currentShift} started. Keep the crew alive!`);
 
-  // Simulate player input every 3 cycles
-  if (i % 3 === 0 && i > 0) {
-    console.log("\n[EMERGENCY ACTION AVAILABLE]");
-    const actions = ["oxygen", "repair", "power"];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    game.manualAction(randomAction);
+  for (let i = 0; i < 16; i++) {
+    game.runMaintenanceCycle();
+    if (game.gameOver) break;
+
+    if (i % 3 === 0 && i > 0) {
+      const actions = ["oxygen", "repair", "power", "boost"];
+      game.manualAction(actions[Math.floor(Math.random() * actions.length)]);
+    }
   }
+
+  game.showEndReport();
+
+  if (game.gameOver) {
+    console.log("\n💀 CAMPAIGN FAILED - Station lost on shift " + currentShift);
+    break;
+  }
+
+  if (currentShift < totalShifts) {
+    console.log(`\n✅ Shift ${currentShift} complete. Preparing for next shift...`);
+  }
+  currentShift++;
 }
 
-if (!game.gameOver) {
-  console.log("\n✅ SHIFT COMPLETE - Outstanding work, Commander!");
-  game.shiftComplete = true;
-} else {
-  console.log("\n💀 STATION LOST - Mission Failed");
+if (currentShift > totalShifts) {
+  console.log("\n🎉 CAMPAIGN COMPLETE - You successfully maintained the station for all shifts!");
 }
-
-game.showEndReport();
 
 console.log("\n=== ORBITAL MAINTENANCE SIMULATION ENDED ===");
