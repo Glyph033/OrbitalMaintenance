@@ -1,7 +1,7 @@
 // Orbital Maintenance System - index.js
 // Space station maintenance simulator
 
-console.log("🚀 Orbital Maintenance System v1.0 initialized");
+console.log("🚀 Orbital Maintenance System v1.1 initialized");
 
 // Main Game Class
 class OrbitalMaintenanceGame {
@@ -12,6 +12,7 @@ class OrbitalMaintenanceGame {
       { score: 762, cycles: 15 },
       { score: 691, cycles: 12 }
     ];
+    this.achievements = [];
   }
 
   resetGame() {
@@ -29,6 +30,14 @@ class OrbitalMaintenanceGame {
     this.cycle = 0;
     this.gameOver = false;
     this.shiftComplete = false;
+  }
+
+  unlockAchievement(name, description) {
+    if (!this.achievements.find(a => a.name === name)) {
+      this.achievements.push({ name, description, unlockedAt: this.cycle });
+      console.log(`🏆 ACHIEVEMENT UNLOCKED: ${name}`);
+      console.log(`   ${description}`);
+    }
   }
 
   triggerAlert(level, message) {
@@ -54,6 +63,7 @@ class OrbitalMaintenanceGame {
       case "o2":
         this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 22);
         console.log("💨 Large oxygen boost deployed.");
+        if (this.systems.oxygen.level > 95) this.unlockAchievement("Oxygen Master", "Maintained oxygen above 95%");
         break;
       case "power":
         this.systems.power.level = Math.min(100, this.systems.power.level + 18);
@@ -94,6 +104,9 @@ class OrbitalMaintenanceGame {
       this.crew.morale = Math.max(10, this.crew.morale - 6);
     }
 
+    // Achievement checks
+    if (this.cycle === 8) this.unlockAchievement("Survivor", "Survived 8 cycles");
+
     this.checkSystemHealth();
 
     if (this.systems.oxygen.level <= 12 || this.systems.power.level <= 10 || 
@@ -122,10 +135,13 @@ class OrbitalMaintenanceGame {
     console.log(`Final Score         : ${score}/1000`);
     console.log(`Hull Integrity      : ${this.systems.hull.integrity}%`);
     console.log(`Crew Morale         : ${this.crew.morale}%`);
-    console.log(`Upgrades Purchased  : ${this.upgradesPurchased}`);
     
+    if (this.achievements.length > 0) {
+      console.log(`\n🏆 Achievements Unlocked: ${this.achievements.length}`);
+    }
+
     // Update high scores
-    if (score > this.highScores[2].score) {
+    if (score > this.highScores[this.highScores.length-1].score) {
       console.log("🏆 NEW HIGH SCORE ACHIEVED!");
       this.highScores.push({ score, cycles: this.cycle });
       this.highScores.sort((a, b) => b.score - a.score);
@@ -157,7 +173,7 @@ while (currentShift <= totalShifts) {
   console.log(`\n📍 SHIFT ${currentShift} / ${totalShifts}`);
   game.resetGame();
   
-  game.triggerAlert("INFO", `Shift ${currentShift} started. Keep the crew alive!`);
+  game.triggerAlert("INFO", `Shift ${currentShift} started.`);
 
   for (let i = 0; i < 16; i++) {
     game.runMaintenanceCycle();
@@ -172,18 +188,18 @@ while (currentShift <= totalShifts) {
   game.showEndReport();
 
   if (game.gameOver) {
-    console.log("\n💀 CAMPAIGN FAILED - Station lost on shift " + currentShift);
+    console.log("\n💀 CAMPAIGN FAILED");
     break;
   }
 
   if (currentShift < totalShifts) {
-    console.log(`\n✅ Shift ${currentShift} complete. Preparing for next shift...`);
+    console.log(`\n✅ Shift ${currentShift} complete. Preparing next shift...`);
   }
   currentShift++;
 }
 
 if (currentShift > totalShifts) {
-  console.log("\n🎉 CAMPAIGN COMPLETE - You successfully maintained the station for all shifts!");
+  console.log("\n🎉 FULL CAMPAIGN COMPLETE - You are a legend among station engineers!");
 }
 
 console.log("\n=== ORBITAL MAINTENANCE SIMULATION ENDED ===");
