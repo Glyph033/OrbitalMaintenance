@@ -1,7 +1,7 @@
 // Orbital Maintenance System - index.js
 // Space station maintenance simulator
 
-console.log("🚀 Orbital Maintenance System v1.1 initialized");
+console.log("🚀 Orbital Maintenance System v1.2 initialized");
 
 // Main Game Class
 class OrbitalMaintenanceGame {
@@ -29,7 +29,6 @@ class OrbitalMaintenanceGame {
     this.alertLog = [];
     this.cycle = 0;
     this.gameOver = false;
-    this.shiftComplete = false;
   }
 
   unlockAchievement(name, description) {
@@ -56,6 +55,50 @@ class OrbitalMaintenanceGame {
     console.log(`CREW       : ${this.crew.population} | Morale: ${this.crew.morale}%`);
   }
 
+  showUpgradeShop() {
+    console.log("\n🛒 === UPGRADE SHOP ===");
+    console.log("Available Upgrades (costs in power units):");
+    console.log("1. Oxygen Filter Mk2     - Cost: 18  (+oxygen efficiency)");
+    console.log("2. Solar Panel Array     - Cost: 22  (+power generation)");
+    console.log("3. Hull Reinforcement    - Cost: 25  (+hull durability)");
+    console.log("4. Advanced Radiators    - Cost: 16  (+temperature control)");
+    console.log("Type 'upgrade <number>' to purchase");
+  }
+
+  purchaseUpgrade(id) {
+    const costs = [0, 18, 22, 25, 16];
+    const cost = costs[id];
+    if (!cost) return false;
+
+    if (this.systems.power.level < cost) {
+      console.log("❌ Insufficient power to purchase this upgrade.");
+      return false;
+    }
+
+    this.systems.power.level -= cost;
+    this.upgradesPurchased++;
+
+    switch(id) {
+      case 1:
+        console.log("✅ Oxygen Filter Mk2 installed. Oxygen efficiency increased.");
+        this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 12);
+        break;
+      case 2:
+        console.log("✅ Solar Panel Array deployed. Power generation improved.");
+        this.systems.power.level = Math.min(100, this.systems.power.level + 15);
+        break;
+      case 3:
+        console.log("✅ Hull Reinforcement complete. Integrity boosted.");
+        this.systems.hull.integrity = Math.min(100, this.systems.hull.integrity + 18);
+        break;
+      case 4:
+        console.log("✅ Advanced Radiators installed. Thermal stability improved.");
+        this.systems.temperature.level = Math.min(100, this.systems.temperature.level + 10);
+        break;
+    }
+    return true;
+  }
+
   manualAction(action) {
     console.log(`\n> EXECUTING: ${action.toUpperCase()}`);
     switch(action.toLowerCase()) {
@@ -63,7 +106,6 @@ class OrbitalMaintenanceGame {
       case "o2":
         this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 22);
         console.log("💨 Large oxygen boost deployed.");
-        if (this.systems.oxygen.level > 95) this.unlockAchievement("Oxygen Master", "Maintained oxygen above 95%");
         break;
       case "power":
         this.systems.power.level = Math.min(100, this.systems.power.level + 18);
@@ -81,8 +123,11 @@ class OrbitalMaintenanceGame {
         this.crew.morale = Math.min(100, this.crew.morale + 15);
         console.log("👥 Crew morale boosted.");
         break;
+      case "shop":
+        this.showUpgradeShop();
+        break;
       default:
-        console.log("Unknown command. Try: oxygen, power, repair, cool, boost");
+        console.log("Unknown command. Try: oxygen, power, repair, cool, boost, shop");
     }
   }
 
@@ -104,8 +149,7 @@ class OrbitalMaintenanceGame {
       this.crew.morale = Math.max(10, this.crew.morale - 6);
     }
 
-    // Achievement checks
-    if (this.cycle === 8) this.unlockAchievement("Survivor", "Survived 8 cycles");
+    if (this.cycle === 6) this.unlockAchievement("Survivor", "Survived first 6 cycles");
 
     this.checkSystemHealth();
 
@@ -135,12 +179,12 @@ class OrbitalMaintenanceGame {
     console.log(`Final Score         : ${score}/1000`);
     console.log(`Hull Integrity      : ${this.systems.hull.integrity}%`);
     console.log(`Crew Morale         : ${this.crew.morale}%`);
-    
+    console.log(`Upgrades Purchased  : ${this.upgradesPurchased}`);
+
     if (this.achievements.length > 0) {
-      console.log(`\n🏆 Achievements Unlocked: ${this.achievements.length}`);
+      console.log(`\n🏆 Achievements: ${this.achievements.length}`);
     }
 
-    // Update high scores
     if (score > this.highScores[this.highScores.length-1].score) {
       console.log("🏆 NEW HIGH SCORE ACHIEVED!");
       this.highScores.push({ score, cycles: this.cycle });
@@ -160,46 +204,34 @@ class OrbitalMaintenanceGame {
 }
 
 // ========================
-// MULTI-SHIFT CAMPAIGN
+// GAME EXECUTION
 // ========================
 
-console.log("\n=== ORBITAL MAINTENANCE CAMPAIGN START ===");
-
 const game = new OrbitalMaintenanceGame();
-let currentShift = 1;
-const totalShifts = 3;
 
-while (currentShift <= totalShifts) {
-  console.log(`\n📍 SHIFT ${currentShift} / ${totalShifts}`);
-  game.resetGame();
-  
-  game.triggerAlert("INFO", `Shift ${currentShift} started.`);
+console.log("\n=== ORBITAL MAINTENANCE SHIFT START ===");
+game.triggerAlert("INFO", "Commander online. Use 'shop' to access upgrades.");
 
-  for (let i = 0; i < 16; i++) {
-    game.runMaintenanceCycle();
-    if (game.gameOver) break;
+for (let i = 0; i < 18; i++) {
+  game.runMaintenanceCycle();
+  if (game.gameOver) break;
 
-    if (i % 3 === 0 && i > 0) {
-      const actions = ["oxygen", "repair", "power", "boost"];
-      game.manualAction(actions[Math.floor(Math.random() * actions.length)]);
-    }
+  if (i % 4 === 0 && i > 0) {
+    game.showUpgradeShop();
+    // Simulate purchase
+    game.purchaseUpgrade(Math.floor(Math.random() * 4) + 1);
+  } else if (i % 3 === 0 && i > 0) {
+    const actions = ["oxygen", "repair", "power"];
+    game.manualAction(actions[Math.floor(Math.random() * actions.length)]);
   }
-
-  game.showEndReport();
-
-  if (game.gameOver) {
-    console.log("\n💀 CAMPAIGN FAILED");
-    break;
-  }
-
-  if (currentShift < totalShifts) {
-    console.log(`\n✅ Shift ${currentShift} complete. Preparing next shift...`);
-  }
-  currentShift++;
 }
 
-if (currentShift > totalShifts) {
-  console.log("\n🎉 FULL CAMPAIGN COMPLETE - You are a legend among station engineers!");
+if (!game.gameOver) {
+  console.log("\n✅ SHIFT COMPLETE - Excellent work, Commander!");
+} else {
+  console.log("\n💀 STATION LOST");
 }
+
+game.showEndReport();
 
 console.log("\n=== ORBITAL MAINTENANCE SIMULATION ENDED ===");
