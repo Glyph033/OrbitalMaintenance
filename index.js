@@ -2,23 +2,16 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.3");
+console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.5");
 console.log(" ".repeat(18) + "Space Station Life Support Simulator");
 console.log("=".repeat(70));
-console.log("You are the chief maintenance engineer on Orbital Station Aurora.");
-console.log("Keep the station alive as long as possible.\n");
 
 // Main Game Class
 class OrbitalMaintenanceGame {
-  constructor() {
+  constructor(difficulty = "normal") {
+    this.difficulty = difficulty;
+    this.highScores = this.loadHighScores();
     this.resetGame();
-    this.highScores = [
-      { score: 892, cycles: 19 },
-      { score: 845, cycles: 18 },
-      { score: 762, cycles: 15 },
-      { score: 691, cycles: 12 }
-    ];
-    this.achievements = [];
   }
 
   resetGame() {
@@ -37,11 +30,26 @@ class OrbitalMaintenanceGame {
     this.gameOver = false;
   }
 
-  unlockAchievement(name, description) {
-    if (!this.achievements.find(a => a.name === name)) {
-      this.achievements.push({ name, description });
-      console.log(`🏆 ACHIEVEMENT UNLOCKED: ${name}`);
+  getDifficultyMultiplier() {
+    switch(this.difficulty) {
+      case "easy": return 0.7;
+      case "hard": return 1.4;
+      default: return 1.0;
     }
+  }
+
+  loadHighScores() {
+    const saved = localStorage.getItem("orbitalHighScores");
+    return saved ? JSON.parse(saved) : [
+      { score: 892, cycles: 19 },
+      { score: 845, cycles: 18 },
+      { score: 762, cycles: 15 },
+      { score: 691, cycles: 12 }
+    ];
+  }
+
+  saveHighScores() {
+    localStorage.setItem("orbitalHighScores", JSON.stringify(this.highScores));
   }
 
   triggerAlert(level, message) {
@@ -52,7 +60,7 @@ class OrbitalMaintenanceGame {
 
   checkSystemHealth() {
     console.log("\n" + "─".repeat(60));
-    console.log("SYSTEM STATUS");
+    console.log(`SYSTEM STATUS - ${this.difficulty.toUpperCase()} MODE`);
     console.log("─".repeat(60));
     Object.keys(this.systems).forEach(key => {
       const sys = this.systems[key];
@@ -64,12 +72,11 @@ class OrbitalMaintenanceGame {
   }
 
   showUpgradeShop() {
-    console.log("\n🛒 UPGRADE SHOP (Power Cost)");
+    console.log("\n🛒 UPGRADE SHOP");
     console.log("1. Oxygen Filter Mk2     18");
     console.log("2. Solar Panel Expansion 22");
     console.log("3. Hull Reinforcement    25");
     console.log("4. Advanced Radiators    16");
-    console.log("Type 'upgrade <number>' during next action phase.");
   }
 
   purchaseUpgrade(id) {
@@ -82,13 +89,7 @@ class OrbitalMaintenanceGame {
     this.systems.power.level -= cost;
     this.upgradesPurchased++;
 
-    const messages = [
-      "", 
-      "Oxygen efficiency improved!",
-      "Power generation boosted!",
-      "Hull strengthened!",
-      "Thermal control enhanced!"
-    ];
+    const messages = ["", "Oxygen efficiency improved!", "Power generation boosted!", "Hull strengthened!", "Thermal control enhanced!"];
     console.log(`✅ ${messages[id]}`);
     return true;
   }
@@ -103,7 +104,7 @@ class OrbitalMaintenanceGame {
         break;
       case "power":
         this.systems.power.level = Math.min(100, this.systems.power.level + 20);
-        console.log("☀️ Solar arrays pushed to maximum output.");
+        console.log("☀️ Solar arrays pushed to maximum.");
         break;
       case "repair":
         this.systems.hull.integrity = Math.min(100, this.systems.hull.integrity + 22);
@@ -117,39 +118,44 @@ class OrbitalMaintenanceGame {
         this.showUpgradeShop();
         break;
       default:
-        console.log("Commands: oxygen, power, repair, boost, shop");
+        console.log("Available: oxygen, power, repair, boost, shop");
     }
   }
 
   runMaintenanceCycle() {
     this.cycle++;
+    const mult = this.getDifficultyMultiplier();
     console.log(`\n🔧 CYCLE ${this.cycle}`);
 
-    // Consumption
-    this.systems.oxygen.level = Math.max(3, this.systems.oxygen.level - 9);
-    this.systems.power.level = Math.max(3, this.systems.power.level - 8);
+    // Consumption (scaled by difficulty)
+    this.systems.oxygen.level = Math.max(3, this.systems.oxygen.level - Math.floor(9 * mult));
+    this.systems.power.level = Math.max(3, this.systems.power.level - Math.floor(8 * mult));
 
     // Recovery
     this.systems.oxygen.level = Math.min(100, this.systems.oxygen.level + 7);
     this.systems.power.level = Math.min(100, this.systems.power.level + 9);
 
-    // Events
-    if (Math.random() < 0.35) {
+    // Enhanced random events
+    const eventRoll = Math.random();
+    if (eventRoll < 0.32) {
       this.triggerAlert("WARNING", "Micrometeorite swarm");
-      this.systems.hull.integrity = Math.max(4, this.systems.hull.integrity - 9);
-    }
-    if (Math.random() < 0.25) {
-      this.crew.morale = Math.max(5, this.crew.morale - 7);
+      this.systems.hull.integrity = Math.max(4, this.systems.hull.integrity - Math.floor(9 * mult));
+    } else if (eventRoll < 0.48) {
+      this.triggerAlert("WARNING", "Power surge from solar flare");
+      this.systems.power.level = Math.max(5, this.systems.power.level - 14);
+    } else if (eventRoll < 0.6) {
+      this.triggerAlert("INFO", "Crew fatigue reported");
+      this.crew.morale = Math.max(5, this.crew.morale - Math.floor(8 * mult));
     }
 
-    if (this.cycle === 10) this.unlockAchievement("Veteran Engineer", "Survived 10 cycles");
+    if (this.cycle === 10) console.log("🏆 ACHIEVEMENT: Veteran Engineer");
 
     this.checkSystemHealth();
 
     if (this.systems.oxygen.level <= 10 || this.systems.power.level <= 8 || 
         this.systems.hull.integrity <= 15 || this.crew.morale <= 12) {
       this.gameOver = true;
-      this.triggerAlert("CRITICAL", "CATASTROPHIC FAILURE");
+      this.triggerAlert("CRITICAL", "CATASTROPHIC SYSTEM FAILURE");
     }
   }
 
@@ -168,17 +174,19 @@ class OrbitalMaintenanceGame {
     console.log("\n" + "=".repeat(70));
     console.log("           SHIFT REPORT");
     console.log("=".repeat(70));
+    console.log(`Difficulty         : ${this.difficulty.toUpperCase()}`);
     console.log(`Cycles Survived    : ${this.cycle}`);
     console.log(`Final Score        : ${score}/1200`);
     console.log(`Upgrades Bought    : ${this.upgradesPurchased}`);
     console.log(`Final Hull         : ${this.systems.hull.integrity}%`);
     console.log(`Final Morale       : ${this.crew.morale}%`);
 
-    if (score > this.highScores[3].score) {
+    if (score > this.highScores[this.highScores.length-1].score) {
       console.log("🏆 NEW HIGH SCORE RECORDED!");
       this.highScores.push({score, cycles: this.cycle});
       this.highScores.sort((a,b) => b.score - a.score);
       this.highScores = this.highScores.slice(0, 5);
+      this.saveHighScores();
     }
 
     console.log("\n🏅 HIGH SCORES");
@@ -191,15 +199,16 @@ class OrbitalMaintenanceGame {
 }
 
 // ========================
-// MAIN GAME LOOP
+// GAME START
 // ========================
 
-const game = new OrbitalMaintenanceGame();
+const difficulty = "normal"; // Change to "easy" or "hard" to test
+const game = new OrbitalMaintenanceGame(difficulty);
 
-console.log("\n=== SHIFT START ===");
-game.triggerAlert("INFO", "You are now responsible for the station.");
+console.log(`\n=== SHIFT START (${difficulty.toUpperCase()} MODE) ===`);
+game.triggerAlert("INFO", "You are now responsible for Orbital Station Aurora.");
 
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 22; i++) {
   game.runMaintenanceCycle();
   if (game.gameOver) break;
 
@@ -213,9 +222,9 @@ for (let i = 0; i < 20; i++) {
 }
 
 if (!game.gameOver) {
-  console.log("\n🎉 SHIFT SUCCESSFULLY COMPLETED!");
+  console.log("\n🎉 EXCELLENT WORK, COMMANDER! SHIFT COMPLETE.");
 } else {
-  console.log("\n💥 STATION LOST");
+  console.log("\n💥 STATION LOST - Mission Failed");
 }
 
 game.showEndReport();
