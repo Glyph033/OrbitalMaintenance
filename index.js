@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.6");
+console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.7");
 console.log(" ".repeat(18) + "Space Station Life Support Simulator");
 console.log("=".repeat(70));
 
@@ -56,13 +56,12 @@ class CrewSystem {
 }
 
 // ========================
-// MAIN GAME CLASS
+// MAIN GAME
 // ========================
 
 class OrbitalMaintenanceGame {
   constructor(difficulty = "normal") {
     this.difficulty = difficulty;
-    this.highScores = this.loadHighScores();
     this.lifeSupport = new LifeSupportSystem();
     this.power = new PowerSystem();
     this.hull = new HullSystem();
@@ -71,15 +70,6 @@ class OrbitalMaintenanceGame {
     this.alertLog = [];
     this.cycle = 0;
     this.gameOver = false;
-  }
-
-  loadHighScores() {
-    const saved = localStorage.getItem("orbitalHighScores");
-    return saved ? JSON.parse(saved) : [
-      { score: 892, cycles: 19 },
-      { score: 845, cycles: 18 },
-      { score: 762, cycles: 15 }
-    ];
   }
 
   triggerAlert(level, message) {
@@ -105,43 +95,15 @@ class OrbitalMaintenanceGame {
     console.log("─".repeat(60));
   }
 
-  runMaintenanceCycle() {
-    this.cycle++;
-    console.log(`\n🔧 CYCLE ${this.cycle}`);
-
-    const mult = this.difficulty === "hard" ? 1.35 : this.difficulty === "easy" ? 0.75 : 1.0;
-
-    this.lifeSupport.consume(9 * mult);
-    this.power.consume(8 * mult);
-    
-    this.lifeSupport.generate(7);
-    this.power.generate(9);
-
-    // Random events
-    if (Math.random() < 0.37) {
-      this.triggerAlert("WARNING", "Micrometeorite swarm");
-      this.hull.takeDamage(9 * mult);
-    }
-    if (Math.random() < 0.28) {
-      this.triggerAlert("WARNING", "Solar flare interference");
-      this.power.consume(14);
-    }
-    if (Math.random() < 0.25) {
-      this.crew.consumeMorale(7 * mult);
-    }
-
-    this.checkSystemHealth();
-
-    // Game over check
-    const o = this.lifeSupport.getStatus();
-    const p = this.power.getStatus();
-    const h = this.hull.getStatus();
-    const c = this.crew.getStatus();
-
-    if (o.level <= 10 || p.level <= 8 || h.integrity <= 15 || c.morale <= 12) {
-      this.gameOver = true;
-      this.triggerAlert("CRITICAL", "CATASTROPHIC SYSTEM FAILURE");
-    }
+  showCommands() {
+    console.log("\nAvailable commands:");
+    console.log("  oxygen / o2   - Emergency oxygen boost");
+    console.log("  power         - Overcharge solar arrays");
+    console.log("  repair        - Deploy repair drones");
+    console.log("  boost         - Improve crew morale");
+    console.log("  status        - Show detailed status");
+    console.log("  next          - Continue to next cycle");
+    console.log("  quit          - End simulation");
   }
 
   manualAction(action) {
@@ -164,58 +126,94 @@ class OrbitalMaintenanceGame {
         this.crew.boostMorale(18);
         console.log("👥 Crew morale restored.");
         break;
+      case "status":
+        this.checkSystemHealth();
+        return true;
       default:
-        console.log("Available: oxygen, power, repair, boost");
+        console.log("Unknown command. Type 'help' for commands.");
+        return false;
     }
+    return true;
   }
 
-  calculateScore() {
-    const o = this.lifeSupport.getStatus().level;
-    const p = this.power.getStatus().level;
-    const h = this.hull.getStatus().integrity;
-    const m = this.crew.getStatus().morale;
-    return Math.floor(o * 1.3 + p * 1.2 + h * 1.7 + m * 1.0 + this.upgradesPurchased * 35);
-  }
+  runMaintenanceCycle() {
+    this.cycle++;
+    console.log(`\n🔧 === CYCLE ${this.cycle} ===`);
 
-  showEndReport() {
-    const score = this.calculateScore();
-    console.log("\n" + "=".repeat(70));
-    console.log("           SHIFT REPORT");
-    console.log("=".repeat(70));
-    console.log(`Difficulty       : ${this.difficulty.toUpperCase()}`);
-    console.log(`Cycles Survived  : ${this.cycle}`);
-    console.log(`Final Score      : ${score}/1200`);
-    console.log(`Upgrades Bought  : ${this.upgradesPurchased}`);
-    console.log("=".repeat(70));
+    const mult = this.difficulty === "hard" ? 1.35 : this.difficulty === "easy" ? 0.75 : 1.0;
+
+    this.lifeSupport.consume(9 * mult);
+    this.power.consume(8 * mult);
+    this.lifeSupport.generate(7);
+    this.power.generate(9);
+
+    if (Math.random() < 0.37) {
+      this.triggerAlert("WARNING", "Micrometeorite swarm");
+      this.hull.takeDamage(9 * mult);
+    }
+    if (Math.random() < 0.28) {
+      this.triggerAlert("WARNING", "Solar flare interference");
+      this.power.consume(14);
+    }
+    if (Math.random() < 0.25) {
+      this.crew.consumeMorale(7 * mult);
+    }
+
+    this.checkSystemHealth();
+
+    const o = this.lifeSupport.getStatus();
+    const p = this.power.getStatus();
+    const h = this.hull.getStatus();
+    const c = this.crew.getStatus();
+
+    if (o.level <= 10 || p.level <= 8 || h.integrity <= 15 || c.morale <= 12) {
+      this.gameOver = true;
+      this.triggerAlert("CRITICAL", "CATASTROPHIC SYSTEM FAILURE");
+    }
   }
 }
 
 // ========================
-// GAME EXECUTION
+// INTERACTIVE LOOP
 // ========================
 
 const game = new OrbitalMaintenanceGame("normal");
 
 console.log("\n=== SHIFT START ===");
-game.triggerAlert("INFO", "Engineer on duty. Station Aurora is under your command.");
+game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.");
+game.showCommands();
 
-for (let i = 0; i < 22; i++) {
-  game.runMaintenanceCycle();
-  if (game.gameOver) break;
+let running = true;
 
-  if (i % 4 === 0 && i > 0) {
-    const actions = ["oxygen", "power", "repair", "boost"];
-    game.manualAction(actions[Math.floor(Math.random() * actions.length)]);
+while (running && !game.gameOver) {
+  const command = prompt("Enter command (or 'next' to continue):");
+  
+  if (!command) continue;
+  
+  const cmd = command.trim().toLowerCase();
+
+  if (cmd === "quit" || cmd === "exit") {
+    running = false;
+    console.log("Simulation ended by user.");
+    break;
+  }
+
+  if (cmd === "next") {
+    game.runMaintenanceCycle();
+  } 
+  else if (cmd === "help") {
+    game.showCommands();
+  } 
+  else {
+    game.manualAction(cmd);
   }
 }
 
-if (!game.gameOver) {
-  console.log("\n🎉 SHIFT COMPLETE — Outstanding performance!");
+if (game.gameOver) {
+  console.log("\n💥 STATION LOST - Mission Failed");
 } else {
-  console.log("\n💥 STATION LOST");
+  console.log("\n🎉 Simulation ended successfully.");
 }
-
-game.showEndReport();
 
 console.log("\nThanks for playing Orbital Maintenance!");
 console.log("=== SIMULATION ENDED ===");
