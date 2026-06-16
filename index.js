@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.8");
+console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.9");
 console.log(" ".repeat(18) + "Space Station Life Support Simulator");
 console.log("=".repeat(70));
 
@@ -139,7 +139,7 @@ class OrbitalMaintenanceGame {
     this.cycle++;
     console.log(`\n🔧 === CYCLE ${this.cycle} ===`);
 
-    const mult = this.difficulty === "hard" ? 1.35 : this.difficulty === "easy" ? 0.75 : 1.0;
+    const mult = this.difficulty === "hard" ? 1.4 : this.difficulty === "easy" ? 0.7 : 1.0;
 
     this.lifeSupport.consume(9 * mult);
     this.power.consume(8 * mult);
@@ -195,20 +195,35 @@ class OrbitalMaintenanceGame {
 }
 
 // ========================
-// INTERACTIVE GAME LOOP
+// MAIN MENU
 // ========================
 
-function startGame() {
-  const game = new OrbitalMaintenanceGame("normal");
+function selectDifficulty() {
+  console.log("\nSelect Difficulty:");
+  console.log("1. Easy");
+  console.log("2. Normal");
+  console.log("3. Hard");
   
-  console.log("\n=== SHIFT START ===");
+  let choice = prompt("Enter 1, 2 or 3:");
+  switch(choice) {
+    case "1": return "easy";
+    case "3": return "hard";
+    default: return "normal";
+  }
+}
+
+function startGame() {
+  const difficulty = selectDifficulty();
+  const game = new OrbitalMaintenanceGame(difficulty);
+  
+  console.log(`\n=== SHIFT START — ${difficulty.toUpperCase()} MODE ===`);
   game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.");
   game.showCommands();
 
   let running = true;
 
   while (running && !game.gameOver) {
-    const input = prompt("Enter command:");
+    const input = prompt("\nEnter command:");
     if (!input) continue;
 
     const cmd = input.trim().toLowerCase();
@@ -232,8 +247,7 @@ function startGame() {
 
   game.showEndReport();
 
-  // Restart option
-  if (confirm("Play another shift?")) {
+  if (confirm("Start a new shift?")) {
     startGame();
   } else {
     console.log("\nThanks for playing Orbital Maintenance!");
@@ -241,5 +255,5 @@ function startGame() {
   }
 }
 
-// Start the game
+// Launch the game
 startGame();
