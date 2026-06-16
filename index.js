@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.7");
+console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.8");
 console.log(" ".repeat(18) + "Space Station Life Support Simulator");
 console.log("=".repeat(70));
 
@@ -96,14 +96,15 @@ class OrbitalMaintenanceGame {
   }
 
   showCommands() {
-    console.log("\nAvailable commands:");
-    console.log("  oxygen / o2   - Emergency oxygen boost");
-    console.log("  power         - Overcharge solar arrays");
-    console.log("  repair        - Deploy repair drones");
-    console.log("  boost         - Improve crew morale");
-    console.log("  status        - Show detailed status");
-    console.log("  next          - Continue to next cycle");
-    console.log("  quit          - End simulation");
+    console.log("\nCommands:");
+    console.log("  oxygen/o2   - Emergency oxygen boost");
+    console.log("  power       - Overcharge solar arrays");
+    console.log("  repair      - Deploy repair drones");
+    console.log("  boost       - Improve crew morale");
+    console.log("  status      - Show system status");
+    console.log("  next        - Next cycle");
+    console.log("  help        - Show commands");
+    console.log("  quit        - End game");
   }
 
   manualAction(action) {
@@ -128,12 +129,10 @@ class OrbitalMaintenanceGame {
         break;
       case "status":
         this.checkSystemHealth();
-        return true;
+        return;
       default:
-        console.log("Unknown command. Type 'help' for commands.");
-        return false;
+        console.log("Unknown command.");
     }
-    return true;
   }
 
   runMaintenanceCycle() {
@@ -171,49 +170,76 @@ class OrbitalMaintenanceGame {
       this.triggerAlert("CRITICAL", "CATASTROPHIC SYSTEM FAILURE");
     }
   }
-}
 
-// ========================
-// INTERACTIVE LOOP
-// ========================
-
-const game = new OrbitalMaintenanceGame("normal");
-
-console.log("\n=== SHIFT START ===");
-game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.");
-game.showCommands();
-
-let running = true;
-
-while (running && !game.gameOver) {
-  const command = prompt("Enter command (or 'next' to continue):");
-  
-  if (!command) continue;
-  
-  const cmd = command.trim().toLowerCase();
-
-  if (cmd === "quit" || cmd === "exit") {
-    running = false;
-    console.log("Simulation ended by user.");
-    break;
+  calculateScore() {
+    const o = this.lifeSupport.getStatus().level;
+    const p = this.power.getStatus().level;
+    const h = this.hull.getStatus().integrity;
+    const m = this.crew.getStatus().morale;
+    return Math.floor(o * 1.3 + p * 1.2 + h * 1.7 + m * 1.0 + this.upgradesPurchased * 35);
   }
 
-  if (cmd === "next") {
-    game.runMaintenanceCycle();
-  } 
-  else if (cmd === "help") {
-    game.showCommands();
-  } 
-  else {
-    game.manualAction(cmd);
+  showEndReport() {
+    const score = this.calculateScore();
+    console.log("\n" + "=".repeat(70));
+    console.log("           MISSION REPORT");
+    console.log("=".repeat(70));
+    console.log(`Difficulty       : ${this.difficulty.toUpperCase()}`);
+    console.log(`Cycles Survived  : ${this.cycle}`);
+    console.log(`Final Score      : ${score}/1200`);
+    console.log(`Upgrades Bought  : ${this.upgradesPurchased}`);
+    console.log(`Final Hull       : ${this.hull.getStatus().integrity}%`);
+    console.log(`Final Morale     : ${this.crew.getStatus().morale}%`);
+    console.log("=".repeat(70));
   }
 }
 
-if (game.gameOver) {
-  console.log("\n💥 STATION LOST - Mission Failed");
-} else {
-  console.log("\n🎉 Simulation ended successfully.");
+// ========================
+// INTERACTIVE GAME LOOP
+// ========================
+
+function startGame() {
+  const game = new OrbitalMaintenanceGame("normal");
+  
+  console.log("\n=== SHIFT START ===");
+  game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.");
+  game.showCommands();
+
+  let running = true;
+
+  while (running && !game.gameOver) {
+    const input = prompt("Enter command:");
+    if (!input) continue;
+
+    const cmd = input.trim().toLowerCase();
+
+    if (cmd === "quit" || cmd === "exit") {
+      running = false;
+    } else if (cmd === "next") {
+      game.runMaintenanceCycle();
+    } else if (cmd === "help") {
+      game.showCommands();
+    } else {
+      game.manualAction(cmd);
+    }
+  }
+
+  if (game.gameOver) {
+    console.log("\n💥 STATION LOST");
+  } else {
+    console.log("\n✅ Simulation ended by commander.");
+  }
+
+  game.showEndReport();
+
+  // Restart option
+  if (confirm("Play another shift?")) {
+    startGame();
+  } else {
+    console.log("\nThanks for playing Orbital Maintenance!");
+    console.log("=== SIMULATION ENDED ===");
+  }
 }
 
-console.log("\nThanks for playing Orbital Maintenance!");
-console.log("=== SIMULATION ENDED ===");
+// Start the game
+startGame();
