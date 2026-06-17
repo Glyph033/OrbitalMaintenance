@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v1.9");
+console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v2.0");
 console.log(" ".repeat(18) + "Space Station Life Support Simulator");
 console.log("=".repeat(70));
 
@@ -192,6 +192,19 @@ class OrbitalMaintenanceGame {
     console.log(`Final Morale     : ${this.crew.getStatus().morale}%`);
     console.log("=".repeat(70));
   }
+
+  showCredits() {
+    console.log("\n" + "=".repeat(70));
+    console.log(" ".repeat(25) + "THANK YOU FOR PLAYING");
+    console.log("=".repeat(70));
+    console.log("Developed as part of Orbital Maintenance");
+    console.log("A demonstration project for Base Layer 2");
+    console.log("");
+    console.log("Game Systems:");
+    console.log("• Life Support • Power Management • Hull Integrity • Crew");
+    console.log("• Interactive Commands • Difficulty Levels • Persistent Stats");
+    console.log("=".repeat(70));
+  }
 }
 
 // ========================
@@ -246,6 +259,7 @@ function startGame() {
   }
 
   game.showEndReport();
+  game.showCredits();
 
   if (confirm("Start a new shift?")) {
     startGame();
