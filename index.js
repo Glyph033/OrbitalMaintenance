@@ -1,10 +1,13 @@
 // Orbital Maintenance System - index.js
 // Space station maintenance simulator
 
-console.log("=".repeat(70));
-console.log(" ".repeat(22) + "🚀 ORBITAL MAINTENANCE v2.0");
-console.log(" ".repeat(18) + "Space Station Life Support Simulator");
-console.log("=".repeat(70));
+console.log("=".repeat(80));
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.1");
+console.log(" ".repeat(20) + "Orbital Station Aurora - Life Support Simulator");
+console.log("=".repeat(80));
+console.log("Location: Low Earth Orbit");
+console.log("You are the sole Maintenance Engineer on duty.");
+console.log("Keep the station alive. The crew is counting on you.\n");
 
 // ========================
 // SYSTEM MANAGERS
@@ -73,15 +76,15 @@ class OrbitalMaintenanceGame {
   }
 
   triggerAlert(level, message) {
-    const alert = `[CYCLE ${this.cycle}] ${level}: ${message}`;
+    const alert = `[CYCLE ${this.cycle.toString().padStart(2, '0')}] ${level}: ${message}`;
     this.alertLog.push(alert);
     console.log(alert);
   }
 
   checkSystemHealth() {
-    console.log("\n" + "─".repeat(60));
-    console.log(`SYSTEM STATUS — ${this.difficulty.toUpperCase()}`);
-    console.log("─".repeat(60));
+    console.log("\n" + "─".repeat(65));
+    console.log(`SYSTEM STATUS — ${this.difficulty.toUpperCase()} MODE`);
+    console.log("─".repeat(65));
     
     const o = this.lifeSupport.getStatus();
     const p = this.power.getStatus();
@@ -92,19 +95,19 @@ class OrbitalMaintenanceGame {
     console.log(`POWER      ${p.status.padEnd(8)} ${p.level.toString().padStart(3)}%`);
     console.log(`HULL       ${h.status.padEnd(8)} ${h.integrity.toString().padStart(3)}%`);
     console.log(`CREW       ${c.population} | Morale: ${c.morale}%`);
-    console.log("─".repeat(60));
+    console.log("─".repeat(65));
   }
 
   showCommands() {
-    console.log("\nCommands:");
-    console.log("  oxygen/o2   - Emergency oxygen boost");
-    console.log("  power       - Overcharge solar arrays");
-    console.log("  repair      - Deploy repair drones");
-    console.log("  boost       - Improve crew morale");
-    console.log("  status      - Show system status");
-    console.log("  next        - Next cycle");
-    console.log("  help        - Show commands");
-    console.log("  quit        - End game");
+    console.log("\nAvailable Commands:");
+    console.log("  oxygen / o2   → Emergency oxygen boost");
+    console.log("  power         → Overcharge solar arrays");
+    console.log("  repair        → Deploy repair drones");
+    console.log("  boost         → Improve crew morale");
+    console.log("  status        → Show full system status");
+    console.log("  next          → Advance to next cycle");
+    console.log("  help          → Show this menu");
+    console.log("  quit          → End current shift");
   }
 
   manualAction(action) {
@@ -131,7 +134,7 @@ class OrbitalMaintenanceGame {
         this.checkSystemHealth();
         return;
       default:
-        console.log("Unknown command.");
+        console.log("Unknown command. Type 'help' for available commands.");
     }
   }
 
@@ -147,7 +150,7 @@ class OrbitalMaintenanceGame {
     this.power.generate(9);
 
     if (Math.random() < 0.37) {
-      this.triggerAlert("WARNING", "Micrometeorite swarm");
+      this.triggerAlert("WARNING", "Micrometeorite swarm detected");
       this.hull.takeDamage(9 * mult);
     }
     if (Math.random() < 0.28) {
@@ -156,6 +159,7 @@ class OrbitalMaintenanceGame {
     }
     if (Math.random() < 0.25) {
       this.crew.consumeMorale(7 * mult);
+      this.triggerAlert("INFO", "Crew requesting rest period");
     }
 
     this.checkSystemHealth();
@@ -195,20 +199,17 @@ class OrbitalMaintenanceGame {
 
   showCredits() {
     console.log("\n" + "=".repeat(70));
-    console.log(" ".repeat(25) + "THANK YOU FOR PLAYING");
+    console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
     console.log("=".repeat(70));
-    console.log("Developed as part of Orbital Maintenance");
-    console.log("A demonstration project for Base Layer 2");
-    console.log("");
-    console.log("Game Systems:");
-    console.log("• Life Support • Power Management • Hull Integrity • Crew");
-    console.log("• Interactive Commands • Difficulty Levels • Persistent Stats");
+    console.log("Station Aurora thanks you for your service.");
+    console.log("Built as a demonstration project for Base Layer 2.");
+    console.log("Keep exploring. Keep maintaining.");
     console.log("=".repeat(70));
   }
 }
 
 // ========================
-// MAIN MENU
+// MAIN MENU & GAME LOOP
 // ========================
 
 function selectDifficulty() {
@@ -217,7 +218,7 @@ function selectDifficulty() {
   console.log("2. Normal");
   console.log("3. Hard");
   
-  let choice = prompt("Enter 1, 2 or 3:");
+  let choice = prompt("Enter 1, 2 or 3: ");
   switch(choice) {
     case "1": return "easy";
     case "3": return "hard";
@@ -236,7 +237,7 @@ function startGame() {
   let running = true;
 
   while (running && !game.gameOver) {
-    const input = prompt("\nEnter command:");
+    const input = prompt("\nEnter command: ");
     if (!input) continue;
 
     const cmd = input.trim().toLowerCase();
@@ -253,9 +254,9 @@ function startGame() {
   }
 
   if (game.gameOver) {
-    console.log("\n💥 STATION LOST");
+    console.log("\n💥 STATION LOST - Mission Failed");
   } else {
-    console.log("\n✅ Simulation ended by commander.");
+    console.log("\n✅ Shift concluded.");
   }
 
   game.showEndReport();
