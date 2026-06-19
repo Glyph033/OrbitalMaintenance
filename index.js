@@ -2,10 +2,10 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.1");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.2");
 console.log(" ".repeat(20) + "Orbital Station Aurora - Life Support Simulator");
 console.log("=".repeat(80));
-console.log("Location: Low Earth Orbit");
+console.log("Location: Low Earth Orbit • 412km altitude");
 console.log("You are the sole Maintenance Engineer on duty.");
 console.log("Keep the station alive. The crew is counting on you.\n");
 
@@ -100,14 +100,14 @@ class OrbitalMaintenanceGame {
 
   showCommands() {
     console.log("\nAvailable Commands:");
-    console.log("  oxygen / o2   → Emergency oxygen boost");
-    console.log("  power         → Overcharge solar arrays");
-    console.log("  repair        → Deploy repair drones");
-    console.log("  boost         → Improve crew morale");
-    console.log("  status        → Show full system status");
-    console.log("  next          → Advance to next cycle");
-    console.log("  help          → Show this menu");
-    console.log("  quit          → End current shift");
+    console.log("  oxygen/o2   → Emergency oxygen boost");
+    console.log("  power       → Overcharge solar arrays");
+    console.log("  repair      → Deploy repair drones");
+    console.log("  boost       → Improve crew morale");
+    console.log("  status      → Show full system status");
+    console.log("  next        → Advance to next cycle");
+    console.log("  help        → Show commands");
+    console.log("  quit        → End current shift");
   }
 
   manualAction(action) {
@@ -149,17 +149,21 @@ class OrbitalMaintenanceGame {
     this.lifeSupport.generate(7);
     this.power.generate(9);
 
-    if (Math.random() < 0.37) {
+    // Enhanced random events with narrative
+    const event = Math.random();
+    if (event < 0.25) {
       this.triggerAlert("WARNING", "Micrometeorite swarm detected");
       this.hull.takeDamage(9 * mult);
-    }
-    if (Math.random() < 0.28) {
-      this.triggerAlert("WARNING", "Solar flare interference");
+    } else if (event < 0.45) {
+      this.triggerAlert("WARNING", "Solar flare interference detected");
       this.power.consume(14);
-    }
-    if (Math.random() < 0.25) {
-      this.crew.consumeMorale(7 * mult);
-      this.triggerAlert("INFO", "Crew requesting rest period");
+      console.log("   Solar panels temporarily offline.");
+    } else if (event < 0.6) {
+      this.triggerAlert("INFO", "Crew reports minor power flicker in quarters");
+      this.crew.consumeMorale(6);
+    } else if (event < 0.7) {
+      this.triggerAlert("INFO", "External temperature spike detected");
+      console.log("   Thermal systems working overtime.");
     }
 
     this.checkSystemHealth();
@@ -202,8 +206,8 @@ class OrbitalMaintenanceGame {
     console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
     console.log("=".repeat(70));
     console.log("Station Aurora thanks you for your service.");
-    console.log("Built as a demonstration project for Base Layer 2.");
-    console.log("Keep exploring. Keep maintaining.");
+    console.log("The crew survived another day thanks to you.");
+    console.log("Built as a demonstration project.");
     console.log("=".repeat(70));
   }
 }
