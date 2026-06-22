@@ -2,11 +2,11 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.4");
-console.log(" ".repeat(20) + "Orbital Station Aurora - Life Support Simulator");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.5");
+console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
-console.log("You are the only maintenance engineer currently on shift.");
+console.log("You are the sole Maintenance Engineer on duty.");
 console.log("Protect the station. Protect the crew.\n");
 
 // ========================
@@ -68,9 +68,9 @@ class OrbitalMaintenanceGame {
   }
 
   checkSystemHealth() {
-    console.log("\n" + "─".repeat(70));
+    console.log("\n" + "─".repeat(72));
     console.log(`📡 SYSTEM STATUS — ${this.difficulty.toUpperCase()} MODE`);
-    console.log("─".repeat(70));
+    console.log("─".repeat(72));
     
     const o = this.lifeSupport.getStatus();
     const p = this.power.getStatus();
@@ -81,11 +81,11 @@ class OrbitalMaintenanceGame {
     console.log(`☀️  POWER    ${p.status.padEnd(8)} ${p.level.toString().padStart(3)}%`);
     console.log(`🛡️  HULL     ${h.status.padEnd(8)} ${h.integrity.toString().padStart(3)}%`);
     console.log(`👥 CREW     ${c.population} | Morale: ${c.morale}%`);
-    console.log("─".repeat(70));
+    console.log("─".repeat(72));
   }
 
   showCommands() {
-    console.log("\n🛠️ Available Commands:");
+    console.log("\n🛠️  Available Commands:");
     console.log("  oxygen / o2 → Emergency oxygen boost");
     console.log("  power       → Overcharge solar arrays");
     console.log("  repair      → Deploy repair drones");
@@ -135,17 +135,17 @@ class OrbitalMaintenanceGame {
     this.lifeSupport.generate(7);
     this.power.generate(9);
 
-    const eventRoll = Math.random();
-    if (eventRoll < 0.28) {
+    const roll = Math.random();
+    if (roll < 0.28) {
       this.triggerAlert("WARNING", "Micrometeorite swarm detected", "💥");
       this.hull.takeDamage(9 * mult);
-    } else if (eventRoll < 0.48) {
+    } else if (roll < 0.48) {
       this.triggerAlert("WARNING", "Solar flare interference", "☀️");
       this.power.consume(14);
-    } else if (eventRoll < 0.65) {
+    } else if (roll < 0.65) {
       this.triggerAlert("INFO", "Crew reports unusual noises in sector 7", "👥");
       this.crew.consumeMorale(6);
-    } else if (eventRoll < 0.75) {
+    } else if (roll < 0.78) {
       this.triggerAlert("INFO", "Minor pressure fluctuation detected", "🌬️");
     }
 
@@ -188,9 +188,9 @@ class OrbitalMaintenanceGame {
     console.log("\n" + "=".repeat(75));
     console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
     console.log("=".repeat(75));
-    console.log("Station Aurora is stable thanks to your efforts.");
-    console.log("42 crew members are alive because of you.");
-    console.log("Built as a demonstration project for Base Layer 2.");
+    console.log("Station Aurora remains operational thanks to you.");
+    console.log("42 crew members are safe because of your vigilance.");
+    console.log("Thank you for playing Orbital Maintenance.");
     console.log("=".repeat(75));
   }
 }
@@ -244,5 +244,5 @@ function startGame() {
   else console.log("\nThanks for playing Orbital Maintenance!\n=== SIMULATION ENDED ===");
 }
 
-// Start the game
+// Launch the game
 startGame();
