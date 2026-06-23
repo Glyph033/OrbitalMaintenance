@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.5");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.6");
 console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
@@ -59,6 +59,7 @@ class OrbitalMaintenanceGame {
     this.alertLog = [];
     this.cycle = 0;
     this.gameOver = false;
+    this.totalScore = 0;
   }
 
   triggerAlert(level, message, emoji = "⚠️") {
@@ -188,9 +189,10 @@ class OrbitalMaintenanceGame {
     console.log("\n" + "=".repeat(75));
     console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
     console.log("=".repeat(75));
-    console.log("Station Aurora remains operational thanks to you.");
-    console.log("42 crew members are safe because of your vigilance.");
+    console.log("Station Aurora remains operational.");
+    console.log("The crew is safe thanks to your dedication.");
     console.log("Thank you for playing Orbital Maintenance.");
+    console.log("Built for Base Layer 2 demonstration.");
     console.log("=".repeat(75));
   }
 }
@@ -240,8 +242,12 @@ function startGame() {
   game.showEndReport();
   game.showCredits();
 
-  if (confirm("Start a new shift?")) startGame();
-  else console.log("\nThanks for playing Orbital Maintenance!\n=== SIMULATION ENDED ===");
+  if (confirm("Start a new shift?")) {
+    startGame();
+  } else {
+    console.log("\nThanks for playing Orbital Maintenance!");
+    console.log("=== SIMULATION ENDED ===");
+  }
 }
 
 // Launch the game
