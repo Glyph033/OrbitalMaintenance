@@ -2,7 +2,7 @@
 // Space station maintenance simulator
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.6");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v2.7");
 console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
@@ -59,7 +59,6 @@ class OrbitalMaintenanceGame {
     this.alertLog = [];
     this.cycle = 0;
     this.gameOver = false;
-    this.totalScore = 0;
   }
 
   triggerAlert(level, message, emoji = "⚠️") {
@@ -192,7 +191,7 @@ class OrbitalMaintenanceGame {
     console.log("Station Aurora remains operational.");
     console.log("The crew is safe thanks to your dedication.");
     console.log("Thank you for playing Orbital Maintenance.");
-    console.log("Built for Base Layer 2 demonstration.");
+    console.log("Built as a demonstration project for Base Layer 2.");
     console.log("=".repeat(75));
   }
 }
