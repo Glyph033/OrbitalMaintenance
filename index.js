@@ -1,8 +1,8 @@
 // Orbital Maintenance System - index.js
-// Space station maintenance simulator - COMPLETE FINAL RELEASE v3.1
+// Space station maintenance simulator - COMPLETE FINAL RELEASE v3.2
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.1");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.2");
 console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
@@ -186,4 +186,68 @@ class OrbitalMaintenanceGame {
 
   showCredits() {
     console.log("\n" + "=".repeat(75));
-    console.log(" ".repeat(28) + "TH
+    console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
+    console.log("=".repeat(75));
+    console.log("Station Aurora remains operational.");
+    console.log("The crew is safe thanks to your dedication.");
+    console.log("Thank you for playing Orbital Maintenance.");
+    console.log("Built as a demonstration project for Base Layer 2.");
+    console.log("=".repeat(75));
+  }
+}
+
+// ========================
+// GAME LAUNCH
+// ========================
+
+function selectDifficulty() {
+  console.log("\nSelect Difficulty:");
+  console.log("1. Easy");
+  console.log("2. Normal");
+  console.log("3. Hard");
+  let choice = prompt("Enter 1, 2 or 3: ");
+  switch(choice) {
+    case "1": return "easy";
+    case "3": return "hard";
+    default: return "normal";
+  }
+}
+
+function startGame() {
+  const difficulty = selectDifficulty();
+  const game = new OrbitalMaintenanceGame(difficulty);
+  
+  console.log(`\n=== SHIFT START — ${difficulty.toUpperCase()} MODE ===`);
+  game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.", "🚀");
+  game.showCommands();
+
+  let running = true;
+
+  while (running && !game.gameOver) {
+    const input = prompt("\nEnter command: ");
+    if (!input) continue;
+
+    const cmd = input.trim().toLowerCase();
+
+    if (cmd === "quit" || cmd === "exit") running = false;
+    else if (cmd === "next") game.runMaintenanceCycle();
+    else if (cmd === "help") game.showCommands();
+    else game.manualAction(cmd);
+  }
+
+  if (game.gameOver) console.log("\n💥 STATION LOST - Mission Failed");
+  else console.log("\n✅ Shift concluded.");
+
+  game.showEndReport();
+  game.showCredits();
+
+  if (confirm("Start a new shift?")) {
+    startGame();
+  } else {
+    console.log("\nThanks for playing Orbital Maintenance!");
+    console.log("=== SIMULATION ENDED ===");
+  }
+}
+
+// Launch the game
+startGame();
