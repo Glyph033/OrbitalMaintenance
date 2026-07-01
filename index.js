@@ -1,8 +1,8 @@
 // Orbital Maintenance System - index.js
-// Space station maintenance simulator - COMPLETE FINAL RELEASE v3.2
+// Space station maintenance simulator - COMPLETE FINAL RELEASE v3.3
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.2");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.3");
 console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
