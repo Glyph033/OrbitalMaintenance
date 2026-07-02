@@ -1,13 +1,13 @@
 // Orbital Maintenance System - index.js
-// Space station maintenance simulator - COMPLETE FINAL RELEASE v3.3
+// Space station maintenance simulator - ULTIMATE FINAL RELEASE v3.4
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.3");
-console.log(" ".repeat(18) + "FINAL RELEASE - Orbital Station Aurora");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.4");
+console.log(" ".repeat(18) + "ULTIMATE FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
 console.log("You are the sole Maintenance Engineer on duty.");
-console.log("Protect the station. Protect the crew.\n");
+console.log("The fate of the station and its 42 crew members rests in your hands.\n");
 
 // ========================
 // CORE SYSTEMS
