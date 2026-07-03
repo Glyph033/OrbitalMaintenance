@@ -1,8 +1,8 @@
 // Orbital Maintenance System - index.js
-// Space station maintenance simulator - ULTIMATE FINAL RELEASE v3.4
+// Space station maintenance simulator - ULTIMATE FINAL RELEASE v3.5
 
 console.log("=".repeat(80));
-console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.4");
+console.log(" ".repeat(25) + "🚀 ORBITAL MAINTENANCE v3.5");
 console.log(" ".repeat(18) + "ULTIMATE FINAL RELEASE - Orbital Station Aurora");
 console.log("=".repeat(80));
 console.log("Low Earth Orbit • 412km altitude");
@@ -146,108 +146,4 @@ class OrbitalMaintenanceGame {
       this.triggerAlert("INFO", "Crew reports unusual noises in sector 7", "👥");
       this.crew.consumeMorale(6);
     } else if (roll < 0.78) {
-      this.triggerAlert("INFO", "Minor pressure fluctuation detected", "🌬️");
-    }
-
-    this.checkSystemHealth();
-
-    const o = this.lifeSupport.getStatus();
-    const p = this.power.getStatus();
-    const h = this.hull.getStatus();
-    const c = this.crew.getStatus();
-
-    if (o.level <= 10 || p.level <= 8 || h.integrity <= 15 || c.morale <= 12) {
-      this.gameOver = true;
-      this.triggerAlert("CRITICAL", "CATASTROPHIC SYSTEM FAILURE", "🚨");
-    }
-  }
-
-  calculateScore() {
-    const o = this.lifeSupport.getStatus().level;
-    const p = this.power.getStatus().level;
-    const h = this.hull.getStatus().integrity;
-    const m = this.crew.getStatus().morale;
-    return Math.floor(o * 1.3 + p * 1.2 + h * 1.7 + m * 1.0 + this.upgradesPurchased * 35);
-  }
-
-  showEndReport() {
-    const score = this.calculateScore();
-    console.log("\n" + "=".repeat(75));
-    console.log("           MISSION REPORT");
-    console.log("=".repeat(75));
-    console.log(`Difficulty       : ${this.difficulty.toUpperCase()}`);
-    console.log(`Cycles Survived  : ${this.cycle}`);
-    console.log(`Final Score      : ${score}/1200`);
-    console.log(`Upgrades Bought  : ${this.upgradesPurchased}`);
-    console.log(`Final Hull       : ${this.hull.getStatus().integrity}%`);
-    console.log(`Final Morale     : ${this.crew.getStatus().morale}%`);
-    console.log("=".repeat(75));
-  }
-
-  showCredits() {
-    console.log("\n" + "=".repeat(75));
-    console.log(" ".repeat(28) + "THANK YOU, ENGINEER");
-    console.log("=".repeat(75));
-    console.log("Station Aurora remains operational.");
-    console.log("The crew is safe thanks to your dedication.");
-    console.log("Thank you for playing Orbital Maintenance.");
-    console.log("Built as a demonstration project for Base Layer 2.");
-    console.log("=".repeat(75));
-  }
-}
-
-// ========================
-// GAME LAUNCH
-// ========================
-
-function selectDifficulty() {
-  console.log("\nSelect Difficulty:");
-  console.log("1. Easy");
-  console.log("2. Normal");
-  console.log("3. Hard");
-  let choice = prompt("Enter 1, 2 or 3: ");
-  switch(choice) {
-    case "1": return "easy";
-    case "3": return "hard";
-    default: return "normal";
-  }
-}
-
-function startGame() {
-  const difficulty = selectDifficulty();
-  const game = new OrbitalMaintenanceGame(difficulty);
-  
-  console.log(`\n=== SHIFT START — ${difficulty.toUpperCase()} MODE ===`);
-  game.triggerAlert("INFO", "You are now in command of Orbital Station Aurora.", "🚀");
-  game.showCommands();
-
-  let running = true;
-
-  while (running && !game.gameOver) {
-    const input = prompt("\nEnter command: ");
-    if (!input) continue;
-
-    const cmd = input.trim().toLowerCase();
-
-    if (cmd === "quit" || cmd === "exit") running = false;
-    else if (cmd === "next") game.runMaintenanceCycle();
-    else if (cmd === "help") game.showCommands();
-    else game.manualAction(cmd);
-  }
-
-  if (game.gameOver) console.log("\n💥 STATION LOST - Mission Failed");
-  else console.log("\n✅ Shift concluded.");
-
-  game.showEndReport();
-  game.showCredits();
-
-  if (confirm("Start a new shift?")) {
-    startGame();
-  } else {
-    console.log("\nThanks for playing Orbital Maintenance!");
-    console.log("=== SIMULATION ENDED ===");
-  }
-}
-
-// Launch the game
-startGame();
+Sorry about that, something didn't go as planned. Please try again, and if you're still seeing this message, go ahead and restart the app.
